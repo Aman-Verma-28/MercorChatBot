@@ -3,12 +3,9 @@ from rest_framework.response import Response
 from .models import Chat
 from .utils import ChatBotQuery
 from datetime import datetime
-import json
 
 
 class ChatBotBrainView(APIView):
-    def __init__(self):
-        self.chat_bot_query = ChatBotQuery()
 
     def post(self, request):
         body = request.data
@@ -20,6 +17,9 @@ class ChatBotBrainView(APIView):
         chat = Chat.objects.filter(chat_id=chat_id)
         if not chat.exists():
             return Response({"error": "chat_id not found"}, status=404)
+
+        chat_bot_query = ChatBotQuery(chat_id)
+
         chat = chat.first()
         messages = chat.messages
         cur_message = {
@@ -29,7 +29,7 @@ class ChatBotBrainView(APIView):
         }
         messages.append(cur_message)
 
-        result = self.chat_bot_query.query_pinecone(query)
+        result = chat_bot_query.query_pinecone(query)
 
         cur_message = {
             "sender": "bot",
